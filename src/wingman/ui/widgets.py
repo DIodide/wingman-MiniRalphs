@@ -142,8 +142,7 @@ class MultilineInput(Input):
             # Check if this looks like an image path - don't collapse those
             text_lower = event.text.lower().strip().strip("'\"")
             is_image = any(text_lower.endswith(ext) for ext in IMAGE_EXTENSIONS) or (
-                text_lower.startswith("file://")
-                and any(ext in text_lower for ext in IMAGE_EXTENSIONS)
+                text_lower.startswith("file://") and any(ext in text_lower for ext in IMAGE_EXTENSIONS)
             )
 
             if is_image:
@@ -241,6 +240,7 @@ class MultilineInput(Input):
                 parts.append(f"[#7aa2f7]{cand}[/]")
         hint.update("  ".join(parts))
 
+
 class ChatMessage(Static):
     """Single chat message."""
 
@@ -296,14 +296,14 @@ class StreamingText(Static):
         self._content = ""
 
     def append_text(self, text: str) -> None:
-        """Append text to the streaming content."""
+        """Append text to the streaming content, rendered as Markdown."""
         self._content += text
-        self.update(Text.from_markup(f"[#c0caf5]{escape(self._content)}[/]"))
+        self.update(Markdown(self._content))
 
     def mark_complete(self) -> None:
-        """Ensure final content is displayed, stripped of trailing whitespace."""
+        """Render final content as Markdown, stripped of trailing whitespace."""
         self._content = self._content.rstrip()
-        self.update(Text.from_markup(f"[#c0caf5]{escape(self._content)}[/]"))
+        self.update(Markdown(self._content))
 
 
 class ToolApproval(Vertical, can_focus=True):
@@ -705,10 +705,10 @@ class ChatPanel(Vertical):
                     elif seg.get("type") == "text":
                         content = seg.get("content", "")
                         if content:
-                            # Match StreamingText color and spacing
+                            # Render as Markdown for proper formatting
                             chat.mount(
                                 Static(
-                                    Text.from_markup(f"[#c0caf5]{escape(content)}[/]"),
+                                    Markdown(content),
                                     id=f"loaded-{base_id}-{widget_id}",
                                     classes="loaded-text",
                                 )
